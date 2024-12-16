@@ -1,9 +1,44 @@
 <script setup lang="ts">
+import {ref} from 'vue'
+import PageLayout from "@/components/layouts/PageLayout.vue";
+import ContainerElement from "@/components/ContainerElement.vue";
+import AppElement from "@/components/AppElement.vue";
 
+const backups = ref([
+  {
+   content: 'address_database_name - бэкап от 17.01.2009, сделан пользователем “Администратор”'
+  },
+  {
+    content: 'address_database_name_2 - бэкап от 17.01.2009, сделан пользователем “Администратор”'
+  }
+])
+const logs= ref([
+  {
+    content: '[17.01.2009|16:01] Пользователь “Алексей Губаев” запросил отчет.'
+
+  },
+  {
+    content: '[17.01.2009|16:00] Пользователь “Администратор” выполнил вручную бэкап базы данных “dbname”'
+  }
+])
 </script>
 
+
 <template>
-  <main>
-    <h1>Home</h1>
-  </main>
+ <PageLayout>
+     <ContainerElement>
+       <div class="container">
+       <AppElement :content="backups" title="Последние бэкапы"/>
+       <AppElement :content="logs" title="Последние логи действий" />
+       </div>
+     </ContainerElement>
+ </PageLayout>
 </template>
+
+<style scoped lang="scss">
+.container{
+  display: flex;
+  flex-direction: column;
+  gap: 70px;
+}
+</style>
