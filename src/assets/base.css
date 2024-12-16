@@ -20,6 +20,9 @@
   margin: 0;
   font-weight: normal;
 }
+html{
+  position: relative;
+}
 
 body {
   min-height: 100vh;

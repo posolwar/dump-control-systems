@@ -2,6 +2,7 @@
 :root {
   --white: #ffffff;
   --dark-blue: #1A1F25;
+  --blue:#141e2a;
   --yellow: #E6B333;
 
   --gray: #D9D9D9;
