@@ -28,7 +28,7 @@ const navs:Nav[] = [
   },
   {
     title:"Бэкапы",
-    route:"/Backups",
+    route:"/backups",
     icon:BackupIcon
   },
   {
@@ -86,8 +86,6 @@ const toggle = () => {
 
 <style scoped lang="scss">
 .navbar {
-  position: relative;
-
   &-list {
     display: flex;
     align-items: center;
@@ -101,6 +99,11 @@ const toggle = () => {
     transition: transform 0.3s ease-in-out;
 
     @media screen and (max-width: 768px) {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+
       flex-direction: column;
       align-items: flex-start;
       padding: 20px;

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-
-const { title = 'Заголовок' } = defineProps<{title: string}>()
+import AppPagination from '@/components/AppPagination.vue'
+const{pagination=false, totalItems=10, itemsPerPage= 5, modelValue=1} = defineProps<{pagination: boolean, totalItems?: number, itemsPerPage?: number, modelValue?: number}>()
 </script>
 
 <template>
   <div class="container-element">
-    <h3 class="container-element__title">{{ title }}</h3>
     <div class=" container-element__content">
         <slot/>
+      <div class="container-element__footer">
+        <AppPagination :total-items="totalItems" :items-per-page="itemsPerPage" :model-value="modelValue" v-if="pagination"/>
+      </div>
     </div>
   </div>
 
@@ -20,5 +22,11 @@ const { title = 'Заголовок' } = defineProps<{title: string}>()
   background-color: var(--gray);
   padding: 39px 30px 79px 30px;
   border-radius: 58px;
+  &__footer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 30px;
+  }
 }
 </style>
