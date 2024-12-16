@@ -1,0 +1,24 @@
+<script setup lang="ts">
+
+const { title = 'Заголовок' } = defineProps<{title: string}>()
+</script>
+
+<template>
+  <div class="container-element">
+    <h3 class="container-element__title">{{ title }}</h3>
+    <div class=" container-element__content">
+        <slot/>
+    </div>
+  </div>
+
+</template>
+
+<style scoped lang="scss">
+.container-element{
+  max-width: 807px;
+  margin: 0 auto;
+  background-color: var(--gray);
+  padding: 39px 30px 79px 30px;
+  border-radius: 58px;
+}
+</style>
