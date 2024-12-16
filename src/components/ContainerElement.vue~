@@ -26,7 +26,7 @@ const{pagination=false, totalItems=10, itemsPerPage= 5, modelValue=1} = definePr
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 30px;
+    padding-top: 40px;
   }
 }
 </style>

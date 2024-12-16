@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppPagination from '@/components/AppPagination.vue'
-const{pagination=false, totalItems=10, itemsPerPage= 5, modelValue=1} = defineProps<{pagination: boolean, totalItems?: number, itemsPerPage?: number, modelValue?: number}>()
+const{pagination=false, totalItems=10, itemsPerPage= 5, modelValue=1} = defineProps<{pagination?: boolean, totalItems?: number, itemsPerPage?: number, modelValue?: number}>()
 </script>
 
 <template>
