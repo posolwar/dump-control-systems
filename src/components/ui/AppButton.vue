@@ -21,6 +21,8 @@ const clickOnButton = () => {
   border-radius: 10px;
   transition: opacity 0.3s;
   color: var(--black);
+  font-size: 16px;
+  line-height: 18px;
   &:hover{
     opacity: 0.8;
   }

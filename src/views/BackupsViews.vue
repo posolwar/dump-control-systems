@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import {ref} from 'vue'
-import PageLayout from "@/components/layouts/PageLayout.vue";
-import ContainerElement from "@/components/ContainerElement.vue";
+import { ref } from 'vue'
+import PageLayout from '@/components/layouts/PageLayout.vue'
+import ContainerElement from '@/components/ContainerElement.vue'
 import AppTable from '@/components/AppTable.vue'
-
 
 // interface TableItem {
 //   server: string;
@@ -13,14 +12,7 @@ import AppTable from '@/components/AppTable.vue'
 //   status: string;
 // }
 
-const tableBackupHeaders = ref([
-  'Сервер',
-  'БД',
-  'Дата создания',
-  'Размер',
-  'Статус',
-  ''
-]);
+const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', ''])
 
 const tableData = ref([
   { server: 'aap1-chel2.ru', db: 'app', date: '17.01.2017 17:06', size: 126, status: 'Ok' },
@@ -35,7 +27,7 @@ const tableData = ref([
   { server: 'aap1-chel2.ru', db: 'app', date: '17.01.2017 17:06', size: 126, status: 'Ok' },
   { server: 'aap1-chel2.ru', db: 'app', date: '17.01.2017 17:06', size: 126, status: 'Ok' },
   { server: 'aap1-chel2.ru', db: 'app', date: '17.01.2017 17:06', size: 126, status: 'Ok' },
-]);
+])
 
 const tableAutoBackupHeaders = ref([
   'Сервер',
@@ -44,8 +36,8 @@ const tableAutoBackupHeaders = ref([
   'Следующая дата',
   'Интервал',
   'Статус',
-  ''
-]);
+  '',
+])
 const tableAutoBackupsData = ref([
   {
     server: 'aap1-chel2.ru',
@@ -53,7 +45,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -61,7 +53,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -69,7 +61,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -77,7 +69,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -85,7 +77,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -93,7 +85,7 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
+    status: 'Не выполняется',
   },
   {
     server: 'aap1-chel2.ru',
@@ -101,33 +93,43 @@ const tableAutoBackupsData = ref([
     executed: '17.01.2017 17:06',
     last_date: '18.01.2017 17:06',
     interval: '1d',
-    status: 'Не выполняется'
-  }
-]);
+    status: 'Не выполняется',
+  },
+])
 </script>
-
 
 <template>
   <PageLayout>
-    <ContainerElement >
+    <ContainerElement>
       <div class="table-container">
-<AppTable title="Бэкапы" :data="tableData"
+        <AppTable
+          title="Бэкапы"
+          :data="tableData"
           :headers="tableBackupHeaders"
           :showPagination="true"
-          :showActions="true" filters btn/>
+          :showActions="true"
+          filters
+          btn
+        />
 
-      <AppTable title="Бэкапы" :data="tableAutoBackupsData"
-                :headers="tableAutoBackupHeaders"
-                :showPagination="true"
-                :showActions="true" filters btn :show-action-edit="false"/>
-
+        <AppTable
+          title="Управление автоматизацией бэкапов"
+          :data="tableAutoBackupsData"
+          :headers="tableAutoBackupHeaders"
+          :showPagination="true"
+          :showActions="true"
+          filters
+          btn
+          :show-action-edit="false"
+          label-btn="создать автобэкап"
+        />
       </div>
     </ContainerElement>
   </PageLayout>
 </template>
 
 <style scoped lang="scss">
-.table-container{
+.table-container {
   display: flex;
   flex-direction: column;
   gap: 30px;
