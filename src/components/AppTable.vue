@@ -4,7 +4,7 @@ import { ref,computed,watch } from 'vue';
 import AppButton from '@/components/ui/AppButton.vue'
 import AppPagination from '@/components/AppPagination.vue'
 
-const {  data, headers, showActions,showActionEdit=true, showPagination = true,title,filters ,btn} = defineProps<{
+const {  data, headers, showActions,showActionEdit=true, showPagination = true,title,filters ,btn,labelBtn='создать дамп'} = defineProps<{
   data: any[];
   headers: string[];
   showPagination?: boolean;
@@ -12,7 +12,8 @@ const {  data, headers, showActions,showActionEdit=true, showPagination = true,t
   showActionEdit?: boolean;
   title:string;
   filters: boolean,
-  btn:boolean
+  btn:boolean,
+  labelBtn?:string
 }>();
 
 const localData = ref([...data]);
@@ -48,7 +49,7 @@ watch(() => data, (newVal) => {
       <AppButton>Выбрать БД</AppButton>
       <AppButton>Выбрать период </AppButton>
       </div>
-      <AppButton v-if="btn" color="green" class="app-table__btn">создать дамп</AppButton>
+      <AppButton v-if="btn" color="green" class="app-table__btn">{{labelBtn}}</AppButton>
     </div>
     <table class="table">
       <thead>
@@ -90,8 +91,8 @@ watch(() => data, (newVal) => {
 <style scoped lang="scss">
 .app-table{
   &__title{
-    font-size: 14px;
-    line-height: 16px;
+    font-size: 16px;
+    line-height: 18px;
   }
   &__btn{
     margin-left: auto;
@@ -118,6 +119,8 @@ display: flex;
   width: 100%;
   border-collapse: collapse;
   border-bottom: 1px solid var(--dark-blue);
+  font-size: 16px;
+  line-height: 18px;
   &-icons{
     display: flex;
     align-items: center;
