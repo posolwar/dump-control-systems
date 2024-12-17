@@ -24,6 +24,11 @@ const router = createRouter({
       name: 'users',
       component: () => import('../views/UsersView.vue'),
     },
+    {
+      path: '/reference',
+      name: 'reference',
+      component: () => import('../views/ReferenceView.vue'),
+    },
   ],
 })
 
