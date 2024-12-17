@@ -2,6 +2,10 @@
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import AppInput from '@/components/ui/AppInput.vue'
+import { ref } from 'vue'
+
+const token = ref('')
 </script>
 
 <template>
@@ -12,8 +16,8 @@ import AppButton from '@/components/ui/AppButton.vue'
         <div class="info-content">
           <div class="info-content__wrapper">
             <div class="info-content__footer">
-              <AppButton> Выбрать период </AppButton>
-              <AppButton color="green"> Скачать отчет </AppButton>
+              <AppInput id="token" type="text" v-model="token" placeholder="Api-token телеграмма" />
+              <AppButton> Сохранить </AppButton>
             </div>
           </div>
         </div>
