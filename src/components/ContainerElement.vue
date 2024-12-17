@@ -20,13 +20,12 @@ const{pagination=false, totalItems=10, itemsPerPage= 5, modelValue=1} = definePr
   max-width: 807px;
   margin: 0 auto;
   background-color: var(--gray);
-  padding: 39px 30px 79px 30px;
+  padding: 39px 30px 39px 30px;
   border-radius: 58px;
   &__footer{
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 40px;
   }
 }
 </style>
