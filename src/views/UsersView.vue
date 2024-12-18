@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
 import AppTable from '@/components/AppTable.vue'
+
+import { useUsersStore } from '@/stores/users'
+
+const usersStore = useUsersStore()
 
 const tableUsersHeaders = ref(['Имя', 'Роль', 'Дата создания', ''])
 
@@ -47,7 +51,13 @@ const tableUsersData = ref([
     role: 'Юзер',
     created: '17.01.2017 15:01',
   },
+
+
 ])
+onMounted(() => {
+  usersStore.loadUsersFromLocalStorage()
+  usersStore.fetchUsers()
+})
 </script>
 
 <template>
