@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
 import AppTable from '@/components/AppTable.vue'
+
+import { useDumpStore } from '@/stores/dump'
+
+const dumpStore = useDumpStore()
+
+onMounted(() => {
+  dumpStore.loadDumpsFromLocalStorage()
+  dumpStore.fetchDumps()
+
+})
 
 // interface TableItem {
 //   server: string;
