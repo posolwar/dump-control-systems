@@ -1,35 +1,41 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {onMounted,} from 'vue'
 import PageLayout from "@/components/layouts/PageLayout.vue";
 import ContainerElement from "@/components/ContainerElement.vue";
 import AppElement from "@/components/AppElement.vue";
+import AppLoader from '@/components/AppLoader.vue';
 
-const backups = ref([
-  {
-   content: 'address_database_name - бэкап от 17.01.2009, сделан пользователем “Администратор”'
-  },
-  {
-    content: 'address_database_name_2 - бэкап от 17.01.2009, сделан пользователем “Администратор”'
-  }
-])
-const logs= ref([
-  {
-    content: '[17.01.2009|16:01] Пользователь “Алексей Губаев” запросил отчет.'
+import { useDumpStore } from '@/stores/dump'
+import { useLogsStore } from '@/stores/logs'
 
-  },
-  {
-    content: '[17.01.2009|16:00] Пользователь “Администратор” выполнил вручную бэкап базы данных “dbname”'
-  }
-])
+
+const dumpStore = useDumpStore()
+const logsStore = useLogsStore()
+
+
+onMounted(() => {
+  dumpStore.loadDumpsFromLocalStorage()
+  dumpStore.fetchDumps()
+
+  logsStore.loadLogsFromLocalStorage()
+  logsStore.fetchLogs()
+})
 </script>
 
 
 <template>
  <PageLayout>
      <ContainerElement>
+
        <div class="container">
-       <AppElement :content="backups" title="Последние бэкапы"/>
-       <AppElement :content="logs" title="Последние логи действий" />
+        <div class="container__loader"  v-if="dumpStore.dumpsLoading || logsStore.logsLoading">
+        <AppLoader/>
+      </div>
+      <div class="" v-if="dumpStore.dumpsError || logsStore.logsError">Что-то пошло не так....</div>
+      <div class="container__content" v-else>
+       <AppElement   :content="dumpStore.dumps" title="Последние бэкапы"/>
+       <AppElement :content="logsStore.logs" title="Последние логи действий" />
+      </div>
        </div>
      </ContainerElement>
  </PageLayout>
@@ -37,8 +43,16 @@ const logs= ref([
 
 <style scoped lang="scss">
 .container{
-  display: flex;
-  flex-direction: column;
-  gap: 70px;
+
+  &__content{
+    display: flex;
+    flex-direction: column;
+    gap: 70px;
+  }
+  &__loader{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 </style>
