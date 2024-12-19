@@ -110,20 +110,4 @@ const tableBackupHeaders = ref(['Имя', 'Роль', 'Дата ', ''])
   flex-direction: column;
   gap: 30px;
 }
-.loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-.error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: red;
-  font-size: 16px;
-}
 </style>
