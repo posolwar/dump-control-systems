@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { IDump } from '@/types/dump'
 import type { ILog } from '@/types/log'
 
 import { useDateFormat } from '@/composables/useDateFormat'
@@ -8,14 +7,8 @@ const {
   title = 'Заголовок',
   content,
   type = 'small',
-} = defineProps<{ title: string; content: (IDump | ILog)[]; type?: 'small' | 'big' }>()
+} = defineProps<{ title: string; content: ILog[]; type?: 'small' | 'big' }>()
 
-const isDump = (item: IDump | ILog): item is IDump => {
-  return (item as IDump).file_path !== undefined
-}
-const isLog = (item: IDump | ILog): item is ILog => {
-  return (item as ILog).details !== undefined
-}
 </script>
 
 <template>
@@ -27,11 +20,9 @@ const isLog = (item: IDump | ILog): item is ILog => {
     >
       <div class="element__items">
         <div class="element__item" v-for="(item, index) in content" :key="index">
-          <span v-if="isDump(item)"
-            >{{ item.file_path }} - бэкап от:
-            {{ useDateFormat(item.created_at).formattedDate }}</span
-          >
-          <span v-if="isLog(item)">{{ item.details }}</span>
+          <span>[{{ useDateFormat(item.timestamp).formattedDate }} ]</span>
+          <span>Пользователь "{{ item.username }}"</span>
+          <span>{{ item.operation }}</span>
         </div>
       </div>
     </div>
@@ -65,6 +56,10 @@ const isLog = (item: IDump | ILog): item is ILog => {
     gap: 5px;
   }
   &__item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
     font-size: 14px;
     line-height: 16px;
   }

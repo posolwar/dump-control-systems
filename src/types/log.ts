@@ -3,6 +3,6 @@ interface ILog {
   id: number
   operation: string
   timestamp: string
-  user_id: number
+  username: string
 }
 export type { ILog }

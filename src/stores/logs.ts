@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import axios from 'axios'
 import type { ILog } from '@/types/log'
 
+import { useAuthStore } from '@/stores/auth'
+
 export const useLogsStore = defineStore('logs', () => {
   const logs = ref<ILog[]>([])
   const logsLoading = ref(false)
@@ -11,7 +13,11 @@ export const useLogsStore = defineStore('logs', () => {
   const fetchLogs = async () => {
     try {
       logsLoading.value = true
-      const response = await axios.get<ILog[]>(`${import.meta.env.VITE_BASE_URL}operations/logs`)
+      const response = await axios.get<ILog[]>(`${import.meta.env.VITE_BASE_URL}operations/logs`, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore().token}`,
+        },
+      })
       logs.value = response.data
       localStorage.setItem('logs', JSON.stringify(logs.value))
       console.log(logs.value)
