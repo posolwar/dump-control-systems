@@ -2,23 +2,20 @@
 import { onMounted, ref } from 'vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
-import AppElement from '@/components/AppElement.vue'
+import AppLogElement from '@/components/AppLogElement.vue'
 import AppLoader from '@/components/AppLoader.vue';
 
-import { useDumpStore } from '@/stores/dump'
+
 import { useLogsStore } from '@/stores/logs'
 
 
-const dumpStore = useDumpStore()
 const logsStore = useLogsStore()
 
 
-onMounted(() => {
-  dumpStore.loadDumpsFromLocalStorage()
-  dumpStore.fetchDumps()
+onMounted(async() => {
 
   logsStore.loadLogsFromLocalStorage()
-  logsStore.fetchLogs()
+  await logsStore.fetchLogs()
 })
 
 const pagination = ref({
@@ -39,7 +36,7 @@ const pagination = ref({
       :items-per-page="pagination.itemsPerPage"
     >
       <div class="container">
-        <AppElement :content="logsStore.logs" title="Последние логи действий" type="big" />
+        <AppLogElement :content="logsStore.logs" title="Последние логи действий" type="big" />
       </div>
     </ContainerElement>
   </PageLayout>

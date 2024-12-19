@@ -1,80 +1,104 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
-import AppTable from '@/components/AppTable.vue'
+import AppPagination from '@/components/AppPagination.vue'
+import AppButton from '@/components/ui/AppButton.vue'
 
 import { useUsersStore } from '@/stores/users'
+import { useDateFormat } from '@/composables/useDateFormat'
+import AppLoader from '@/components/AppLoader.vue'
 
 const usersStore = useUsersStore()
 
-const tableUsersHeaders = ref(['Имя', 'Роль', 'Дата создания', ''])
+const localData = ref(usersStore.users)
+const itemsPerPage = ref(5)
+const currentPage = ref(1)
 
-const tableUsersData = ref([
-  {
-    name: 'Администратор',
-    role: 'Администратор',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-  {
-    name: 'Алексей',
-    role: 'Юзер',
-    created: '17.01.2017 15:01',
-  },
-
-
-])
-onMounted(() => {
-  usersStore.loadUsersFromLocalStorage()
-  usersStore.fetchUsers()
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return localData.value.slice(start, end)
 })
+
+const deleteRow = (index: number) => {
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
+  localData.value.splice(globalIndex, 1)
+  if (globalIndex >= localData.value.length && currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+watch(
+  () => usersStore.users,
+  (newVal) => {
+    localData.value = [...newVal]
+    currentPage.value = 1
+  },
+)
+onMounted(async () => {
+  usersStore.loadUsersFromLocalStorage()
+  await usersStore.fetchUsers()
+})
+
+const tableBackupHeaders = ref(['Имя', 'Роль', 'Дата ', ''])
 </script>
 
 <template>
   <PageLayout>
     <ContainerElement>
       <div class="table-container">
-        <AppTable
-          title="Юзеры"
-          :data="tableUsersData"
-          :headers="tableUsersHeaders"
-          :showPagination="true"
-          :showActions="true"
-          :show-action-edit="false"
-          :filters="false"
-          btn
-          label-btn="создать юзера"
-        />
+        <div class="app-table">
+          <div class="app-table__header">
+            <h2 class="app-table__title">Юзеры</h2>
+            <AppButton color="green" class="app-table__btn">создать бэкап</AppButton>
+          </div>
+          <div class="loader" v-if="usersStore.usersLoading">
+            <AppLoader />
+          </div>
+          <div class="error" v-else-if="usersStore.usersError">Что-то пошло не так...</div>
+          <table class="table" v-else>
+            <thead>
+              <tr>
+                <th v-for="header in tableBackupHeaders" :key="header">{{ header }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, rowIndex) in paginatedData" :key="rowIndex">
+                <td>{{ row.username }}</td>
+                <td>{{ row.role }}</td>
+                <td>{{ useDateFormat(row.created_at).formattedDate }}</td>
+
+                <td>
+                  <div class="table-icons">
+                    <svg
+                      @click="deleteRow(rowIndex)"
+                      class="table-icon"
+                      width="8"
+                      height="9"
+                      viewBox="0 0 8 9"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2.07812 0.546875L3.92969 3.625L5.80469 0.546875H7.5L4.73438 4.71875L7.58594 9H5.91406L3.96094 5.82812L2.00781 9H0.328125L3.17188 4.71875L0.414062 0.546875H2.07812Z"
+                        fill="#BE2323"
+                      />
+                    </svg>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="app-table__pagination">
+            <AppPagination
+              :totalItems="usersStore.users.length"
+              :itemsPerPage="itemsPerPage"
+              v-model:modelValue="currentPage"
+            >
+            </AppPagination>
+          </div>
+        </div>
       </div>
     </ContainerElement>
   </PageLayout>
@@ -85,5 +109,21 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 30px;
+}
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: red;
+  font-size: 16px;
 }
 </style>

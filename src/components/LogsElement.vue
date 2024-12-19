@@ -7,7 +7,11 @@ const {
   title = 'Заголовок',
   content,
   type = 'small',
-} = defineProps<{ title: string; content: IDump[] | ILog[]; type?: 'small' | 'big' }>()
+} = defineProps<{ title: string; content: (IDump | ILog)[]; type?: 'small' | 'big' }>()
+
+const isDump = (item: IDump | ILog): item is IDump => {
+  return (item as IDump).file_path !== undefined
+}
 </script>
 
 <template>
@@ -19,7 +23,7 @@ const {
     >
       <div class="element__items">
         <div class="element__item" v-for="(item, index) in content" :key="index">
-          {{ item }}
+          <span v-if="isDump(item) && 'created_at' in item"> Бэкап от {{ item.created_at }}</span>
         </div>
       </div>
     </div>
