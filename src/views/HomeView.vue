@@ -2,21 +2,22 @@
 import { onMounted } from 'vue'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
-import AppElement from '@/components/AppElement.vue'
+import AppDumpElement from '@/components/AppDumpElement.vue'
 import AppLoader from '@/components/AppLoader.vue'
 
 import { useDumpStore } from '@/stores/dump'
 import { useLogsStore } from '@/stores/logs'
+import AppLogElement from '@/components/AppLogElement.vue'
 
 const dumpStore = useDumpStore()
 const logsStore = useLogsStore()
 
-onMounted(() => {
-  dumpStore.loadDumpsFromLocalStorage()
-  dumpStore.fetchDumps()
+onMounted( async() => {
+   dumpStore.loadDumpsFromLocalStorage()
+   await dumpStore.fetchDumps()
 
   logsStore.loadLogsFromLocalStorage()
-  logsStore.fetchLogs()
+  await logsStore.fetchLogs()
 })
 </script>
 
@@ -31,8 +32,8 @@ onMounted(() => {
           Что-то пошло не так....
         </div>
         <div class="container__content" v-else>
-          <AppElement :content="dumpStore.dumps" title="Последние бэкапы" />
-          <AppElement :content="logsStore.logs" title="Последние логи действий" />
+          <AppDumpElement :content="dumpStore.dumps" title="Последние бэкапы" />
+          <AppLogElement :content="logsStore.logs" title="Последние логи действий"/>
         </div>
       </div>
     </ContainerElement>

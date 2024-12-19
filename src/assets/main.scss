@@ -1,0 +1,54 @@
+@import './base.scss' --built-in-only;
+
+.app-table{
+    &__title{
+      font-size: 16px;
+      line-height: 18px;
+    }
+    &__btn{
+      margin-left: auto;
+    }
+    &__pagination{
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+  }
+  .filters{
+  display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    margin-top: 13px;
+    &__content{
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+  }
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    border-bottom: 1px solid var(--dark-blue);
+    font-size: 16px;
+    line-height: 18px;
+    &-icons{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    &-icon{
+      cursor: pointer;
+    }
+  }
+  
+  th, td {
+  
+    padding: 8px;
+  }
+  
+  th {
+   border-top: 1px solid var(--dark-blue);
+    border-bottom: 1px solid var(--dark-blue);
+    text-align: left;
+  }
