@@ -6,73 +6,77 @@ import AppTable from '@/components/AppTable.vue'
 import AppPagination from '@/components/AppPagination.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
-import { useDumpStore } from '@/stores/dump'
+import { useDumpExtendStore } from '@/stores/extend'
 import { useSchedulesStore } from '@/stores/schedules'
 import { useDateFormat } from '@/composables/useDateFormat'
 
-const dumpStore = useDumpStore()
+const dumpExtendStore = useDumpExtendStore()
 const schedulesStore = useSchedulesStore()
 
-const localData = ref(dumpStore.dumps);
-const itemsPerPage = ref(5);
-const currentPage = ref(1);
+const localData = ref(dumpExtendStore.dumpsExtend)
+const itemsPerPage = ref(5)
+const currentPage = ref(1)
 
 // schedules data
 const localSchedulesData = ref(schedulesStore.schedules)
-const itemsPerPageSchedules = ref(5);
-const currentPageSchedules = ref(1);
+const itemsPerPageSchedules = ref(5)
+const currentPageSchedules = ref(1)
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return localData.value.slice(start, end);
-});
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return localData.value.slice(start, end)
+})
 // schedules pagination
 const paginatedSchedulesData = computed(() => {
-  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value;
-  const end = start + itemsPerPageSchedules.value;
-  return localSchedulesData.value.slice(start, end);
-});
+  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value
+  const end = start + itemsPerPageSchedules.value
+  return localSchedulesData.value.slice(start, end)
+})
 
 const deleteRow = (index: number) => {
-  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index;
-  localData.value.splice(globalIndex, 1);
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
+  localData.value.splice(globalIndex, 1)
   if (globalIndex >= localData.value.length && currentPage.value > 1) {
-    currentPage.value--;
+    currentPage.value--
   }
-};
+}
 
 // schedules delete
 const deleteScheduleRow = (index: number) => {
-  const globalIndex = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value + index;
-  localSchedulesData.value.splice(globalIndex, 1);
+  const globalIndex = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value + index
+  localSchedulesData.value.splice(globalIndex, 1)
   if (globalIndex >= localSchedulesData.value.length && currentPageSchedules.value > 1) {
-    currentPageSchedules.value--;
+    currentPageSchedules.value--
   }
-};
+}
 
-watch(() => dumpStore.dumps, (newVal) => {
-  localData.value = [...newVal];
-  currentPage.value = 1;
-});
+watch(
+  () => dumpExtendStore.dumpsExtend,
+  (newVal) => {
+    localData.value = [...newVal]
+    currentPage.value = 1
+  },
+)
 
 // schedules
-watch(() => schedulesStore.schedules, (newVal) => {
-  localSchedulesData.value = [...newVal];
-  currentPageSchedules.value = 1;
-});
+watch(
+  () => schedulesStore.schedules,
+  (newVal) => {
+    localSchedulesData.value = [...newVal]
+    currentPageSchedules.value = 1
+  },
+)
 
-onMounted(async() => {
-  dumpStore.loadDumpsFromLocalStorage()
-  await dumpStore.fetchDumps()
+onMounted(async () => {
+  dumpExtendStore.loadDumpsExtendFromLocalStorage()
+  await dumpExtendStore.fetchExtendDumps()
 
   schedulesStore.loadSchedulesFromLocalStorage()
   await schedulesStore.fetchSchedules()
 })
 
-
-const tableBackupHeaders = ref([ 'ID БД', 'Дата создания', 'Размер', 'Статус', ''])
-
+const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', ''])
 
 const tableAutoBackupHeaders = ref([
   'Сервер',
@@ -155,7 +159,7 @@ const tableAutoBackupsData = ref([
               <AppButton>Выбрать БД</AppButton>
               <AppButton>Выбрать период </AppButton>
             </div>
-            <AppButton  color="green" class="app-table__btn">создать бэкап</AppButton>
+            <AppButton color="green" class="app-table__btn">создать бэкап</AppButton>
           </div>
           <table class="table">
             <thead>
@@ -166,11 +170,12 @@ const tableAutoBackupsData = ref([
             <tbody>
               <tr v-for="(row, rowIndex) in paginatedData" :key="rowIndex">
                 <!-- <td v-for="(value, colIndex) in row" :key="colIndex">{{ value }}</td> -->
-                <td>{{ row.database_id }}</td>
-                <td>{{ useDateFormat( row.created_at).formattedDate }}</td>
+                <td>{{ row.server_name }}</td>
+                <td>{{ row.database_name }}</td>
+                <td>{{ useDateFormat(row.created_at).formattedDate }}</td>
                 <td>{{ row.size }}</td>
                 <td>{{ row.status }}</td>
-                <td >
+                <td>
                   <div class="table-icons">
                     <svg
                       class="table-icon"
@@ -208,7 +213,7 @@ const tableAutoBackupsData = ref([
           </table>
           <div class="app-table__pagination">
             <AppPagination
-              :totalItems="dumpStore.dumps.length"
+              :totalItems="dumpExtendStore.dumpsExtend.length"
               :itemsPerPage="itemsPerPage"
               v-model:modelValue="currentPage"
             >
