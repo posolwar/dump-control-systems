@@ -10,7 +10,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setToken(newToken: string) {
     token.value = newToken
-    Cookies.set('token', newToken, { expires: 7, secure: true, sameSite: 'Strict' })
+    // Set the token in a cookie на HTTPs установить secure:true
+    Cookies.set('token', newToken, { expires: 7, secure: false, sameSite: 'Strict' })
   }
 
   function clearToken() {

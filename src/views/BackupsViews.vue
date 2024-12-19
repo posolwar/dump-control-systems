@@ -9,9 +9,22 @@ import { useDumpExtendStore } from '@/stores/extend'
 import { useSchedulesExtendStore } from '@/stores/schedules-extend'
 import { useDateFormat } from '@/composables/useDateFormat'
 import AppLoader from '@/components/AppLoader.vue'
+import AppModal from '@/components/AppModal.vue'
+import AppInput from '@/components/ui/AppInput.vue'
+import AppSwitch from '@/components/ui/AppSwitch.vue'
 
 const dumpExtendStore = useDumpExtendStore()
 const schedulesStore = useSchedulesExtendStore()
+// modals
+const modalsState = ref<Record<string, boolean>>({
+  dump: false,
+  autoDump: false,
+})
+
+const isSwitchOn = ref(false)
+const openModal = (id: string) => {
+  modalsState.value[id] = true
+}
 
 const localData = ref(dumpExtendStore.dumpsExtend)
 const itemsPerPage = ref(5)
@@ -108,7 +121,9 @@ const tableAutoBackupHeaders = ref([
                 <AppButton>Выбрать БД</AppButton>
                 <AppButton>Выбрать период </AppButton>
               </div>
-              <AppButton color="green" class="app-table__btn">создать бэкап</AppButton>
+              <AppButton color="green" class="app-table__btn" @click="openModal('dump')"
+                >создать бэкап</AppButton
+              >
             </div>
             <table class="table">
               <thead>
@@ -186,7 +201,9 @@ const tableAutoBackupHeaders = ref([
                 <AppButton>Выбрать БД</AppButton>
                 <AppButton>Выбрать период </AppButton>
               </div>
-              <AppButton color="green" class="app-table__btn">создать авто бэкап</AppButton>
+              <AppButton color="green" class="app-table__btn" @click="openModal('autoDump')"
+                >создать авто бэкап</AppButton
+              >
             </div>
             <table class="table">
               <thead>
@@ -250,6 +267,68 @@ const tableAutoBackupHeaders = ref([
         </div>
       </div>
     </ContainerElement>
+    <!-- modal -->
+    <AppModal v-model:modelValue="modalsState.dump">
+      <div class="modal-container">
+        <h3 class="modal-container__title">Создание бэкапа</h3>
+        <!-- server -->
+        <form class="form">
+          <div class="form-content">
+            <div class="form-group">
+              <h3 сlass="form-group__title">Сервер</h3>
+              <div class="form-group__item">
+                <AppInput type="text" label="Название сервера" placeholder="MyServer" />
+              </div>
+              <div class="form-group__item">
+                <AppInput type="text" label="IP" placeholder="192.168.1.1" />
+              </div>
+              <div class="form-group__item">
+                <AppInput type="text" label="Порт" placeholder="5432" />
+              </div>
+              <div class="form-group__item">
+                <AppSwitch v-model:modelValue="isSwitchOn" label="Статус" />
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <AppButton color="green">Создать сервер</AppButton>
+          </div>
+        </form>
+        <!-- database -->
+        <form class="form">
+          <div class="form-content">
+            <div class="form-group">
+              <h3 сlass="form-group__title">База данных</h3>
+              <div class="form-group__item">
+                <AppInput type="text" label="Название базы данных " placeholder="my_databaser" />
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <AppButton color="green">Создать базу данных</AppButton>
+          </div>
+        </form>
+        <!-- dump -->
+        <form class="form">
+          <div class="form-content">
+            <div class="form-group">
+              <h3 сlass="form-group__title">Создание нового бэкапа</h3>
+              <div class="form-group__item">
+                <AppInput type="text" label="Путь к файлу " placeholder="/path/to/dump.sql" />
+              </div>
+              <div class="form-group__item">
+                <AppInput type="text" label="Запланированное время " placeholder="00:00" />
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <AppButton color="green">Создать бэкап</AppButton>
+          </div>
+        </form>
+      </div>
+    </AppModal>
+    <!-- modal -->
+    <AppModal v-model:modelValue="modalsState.autoDump"> jkjjjkjk;;;;;;;;; </AppModal>
   </PageLayout>
 </template>
 
@@ -258,5 +337,35 @@ const tableAutoBackupHeaders = ref([
   display: flex;
   flex-direction: column;
   gap: 30px;
+}
+.modal-container {
+  &__title {
+    font-size: 20px;
+    line-height: 18px;
+    margin-bottom: 20px;
+  }
+}
+.form {
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  &-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    &__title {
+      font-size: 16px;
+      line-height: 18px;
+    }
+  }
+
+  &-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 }
 </style>
