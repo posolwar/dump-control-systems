@@ -65,5 +65,23 @@ export const useDumpStore = defineStore('dump', () => {
     }
   }
 
-  return { dumps, fetchDumps, loadDumpsFromLocalStorage, dumpsLoading, dumpsError, fetchDumpCreate }
+  const deleteDump = async (id: number) => {
+    try {
+      dumpsLoading.value = true
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}dumps/id/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+        },
+      })
+      // Обновите список дампов после удаления
+      await fetchDumps()
+    } catch (error) {
+      console.error('Error deleting dump:', error)
+      dumpsError.value = (error as Error).message
+    } finally {
+      dumpsLoading.value = false
+    }
+  }
+
+  return { dumps, fetchDumps, loadDumpsFromLocalStorage, dumpsLoading, dumpsError, fetchDumpCreate, deleteDump }
 })

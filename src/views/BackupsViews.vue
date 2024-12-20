@@ -1,145 +1,215 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
-import PageLayout from '@/components/layouts/PageLayout.vue';
-import ContainerElement from '@/components/ContainerElement.vue';
-import AppPagination from '@/components/AppPagination.vue';
-import AppButton from '@/components/ui/AppButton.vue';
-import { useServersStore } from '@/stores/servers';
-import { useDatabasesStore } from '@/stores/databases';
-import { useDumpExtendStore } from '@/stores/extend';
-import { useSchedulesExtendStore } from '@/stores/schedules-extend';
-import { useDateFormat } from '@/composables/useDateFormat';
-import { useDumpStore } from '@/stores/dump';
-import AppLoader from '@/components/AppLoader.vue';
-import AppModal from '@/components/AppModal.vue';
-import AppSelect from '@/components/ui/AppSelect.vue';
-import type { ISelectOption } from '@/types/select';
-import type { IDatabase } from '@/types/database';
-import AppNotification from '@/components/AppNotification.vue';
+import { onMounted, ref, computed, watch } from 'vue'
+import PageLayout from '@/components/layouts/PageLayout.vue'
+import ContainerElement from '@/components/ContainerElement.vue'
+import AppPagination from '@/components/AppPagination.vue'
+import AppButton from '@/components/ui/AppButton.vue'
+import { useServersStore } from '@/stores/servers'
+import { useDatabasesStore } from '@/stores/databases'
+import { useDumpExtendStore } from '@/stores/extend'
+import { useSchedulesStore } from '@/stores/schedules'
+import { useSchedulesExtendStore } from '@/stores/schedules-extend'
+import { useDateFormat } from '@/composables/useDateFormat'
+import { useDumpStore } from '@/stores/dump'
+import AppLoader from '@/components/AppLoader.vue'
+import AppModal from '@/components/AppModal.vue'
+import AppSelect from '@/components/ui/AppSelect.vue'
+import type { ISelectOption } from '@/types/select'
+import type { IDatabase } from '@/types/database'
+import AppNotification from '@/components/AppNotification.vue'
 
-const serversStore = useServersStore();
-const databasesStore = useDatabasesStore();
-const dumpExtendStore = useDumpExtendStore();
-const schedulesStore = useSchedulesExtendStore();
-const dumpStore = useDumpStore();
+const serversStore = useServersStore()
+const databasesStore = useDatabasesStore()
+const scheduleStore = useSchedulesStore()
+const dumpExtendStore = useDumpExtendStore()
+const schedulesStore = useSchedulesExtendStore()
+const dumpStore = useDumpStore()
 
 // modals
 const modalsState = ref<Record<string, boolean>>({
   dump: false,
   autoDump: false,
-});
+})
 
 const openModal = (id: string) => {
-  modalsState.value[id] = true;
-};
+  modalsState.value[id] = true
+}
 
-const localData = ref(dumpExtendStore.dumpsExtend);
-const itemsPerPage = ref(5);
-const currentPage = ref(1);
-const showNotification = ref(false);
+const localData = ref(dumpExtendStore.dumpsExtend)
+const itemsPerPage = ref(5)
+const currentPage = ref(1)
+const showNotification = ref(false)
 
 // select data
-const selectedServerValue = ref<string | null>(null);
-const optionsServer = ref<ISelectOption[]>([]);
-const selectedDatabaseValue = ref<string | null>(null);
-const optionsDatabase = ref<ISelectOption[]>([]);
+const selectedServerValue = ref<string | null>(null)
+const optionsServer = ref<ISelectOption[]>([])
+const selectedDatabaseValue = ref<string | null>(null)
+const optionsDatabase = ref<ISelectOption[]>([])
+// schedules auto dump
+const selectedServerValueSchedules = ref<string | null>(null)
+const optionsServerSchedules = ref<ISelectOption[]>([])
+const selectedDatabaseValueSchedules = ref<string | null>(null)
+const optionsDatabaseSchedules = ref<ISelectOption[]>([])
+
+const optionInterval = ref<ISelectOption[]>([
+  {
+    label: 'Ежедневно',
+    value: '1d',
+  },
+  {
+    label: 'Еженедельно',
+    value: 'weekly',
+  },
+  {
+    label: 'Eжемесячно',
+    value: 'monthly',
+  },
+])
 
 // schedules data
-const localSchedulesData = ref(schedulesStore.schedulesExtend);
-const itemsPerPageSchedules = ref(5);
-const currentPageSchedules = ref(1);
+const localSchedulesData = ref(schedulesStore.schedulesExtend)
+const itemsPerPageSchedules = ref(5)
+const currentPageSchedules = ref(1)
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  const end = start + itemsPerPage.value;
-  return localData.value.slice(start, end);
-});
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return localData.value.slice(start, end)
+})
 
 // schedules pagination
 const paginatedSchedulesData = computed(() => {
-  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value;
-  const end = start + itemsPerPageSchedules.value;
-  return localSchedulesData.value.slice(start, end);
-});
+  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value
+  const end = start + itemsPerPageSchedules.value
+  return localSchedulesData.value.slice(start, end)
+})
 
-const deleteRow = (index: number) => {
-  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index;
-  localData.value.splice(globalIndex, 1);
-  if (globalIndex >= localData.value.length && currentPage.value > 1) {
-    currentPage.value--;
+const deleteRow = async (index: number) => {
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
+  const dumpId = localData.value[globalIndex].id
+
+  try {
+    await dumpStore.deleteDump(dumpId)
+    localData.value.splice(globalIndex, 1)
+    if (globalIndex >= localData.value.length && currentPage.value > 1) {
+      currentPage.value--
+    }
+  } catch (error) {
+    console.error('Error deleting dump:', error)
+    // Handle the error as needed
   }
-};
+}
 
 // schedules delete
-const deleteScheduleRow = (index: number) => {
-  const globalIndex = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value + index;
-  localSchedulesData.value.splice(globalIndex, 1);
-  if (globalIndex >= localSchedulesData.value.length && currentPageSchedules.value > 1) {
-    currentPageSchedules.value--;
+const deleteScheduleRow = async (index: number) => {
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
+  const scheduleId = localData.value[globalIndex].id
+
+  try {
+    await scheduleStore.deleteSchedule(scheduleId)
+    localData.value.splice(globalIndex, 1)
+    if (globalIndex >= localData.value.length && currentPage.value > 1) {
+      currentPage.value--
+    }
+  } catch (error) {
+    console.error('Error deleting dump:', error)
+    // Handle the error as needed
   }
-};
+}
 
 watch(
   () => dumpExtendStore.dumpsExtend,
   (newVal) => {
-    localData.value = [...newVal];
-    currentPage.value = 1;
+    localData.value = [...newVal]
+    currentPage.value = 1
   },
-);
+)
 
 // schedules
 watch(
   () => schedulesStore.schedulesExtend,
   (newVal) => {
-    localSchedulesData.value = [...newVal];
-    currentPageSchedules.value = 1;
+    localSchedulesData.value = [...newVal]
+    currentPageSchedules.value = 1
   },
-);
+)
 
 watch(
   () => selectedServerValue.value,
   async (newServerId) => {
     if (newServerId) {
-      const databases = await databasesStore.fetchDatabaseIdServer(Number(newServerId));
+      // поменять функцию databasesStore.fetchDatabaseIdServer создать ее в дальнейшем в store shedule
+      const databases = await databasesStore.fetchDatabaseIdServer(Number(newServerId))
       optionsDatabase.value = databases.map((db: IDatabase) => ({
         value: db.id,
         label: db.name,
-      }));
+      }))
 
       // Устанавливаем первую базу данных по умолчанию
       if (databases.length > 0) {
-        selectedDatabaseValue.value = databases[0].id.toString();
+        selectedDatabaseValue.value = databases[0].id.toString()
       } else {
-        selectedDatabaseValue.value = null;
+        selectedDatabaseValue.value = null
       }
     } else {
-      optionsDatabase.value = [];
-      selectedDatabaseValue.value = null;
+      optionsDatabase.value = []
+      selectedDatabaseValue.value = null
     }
   },
-  { immediate: true } // Загружаем базы данных сразу при инициализации
-);
+  { immediate: true }, // Загружаем базы данных сразу при инициализации
+)
+
+watch(
+  () => selectedServerValueSchedules.value,
+  async (newServerId) => {
+    if (newServerId) {
+      const databases = await databasesStore.fetchDatabaseIdServer(Number(newServerId))
+      optionsDatabaseSchedules.value = databases.map((db: IDatabase) => ({
+        value: db.id,
+        label: db.name,
+      }))
+
+      // Устанавливаем первую базу данных по умолчанию
+      if (databases.length > 0) {
+        selectedDatabaseValueSchedules.value = databases[0].id.toString()
+      } else {
+        selectedDatabaseValueSchedules.value = null
+      }
+    } else {
+      optionsDatabaseSchedules.value = []
+      selectedDatabaseValueSchedules.value = null
+    }
+  },
+  { immediate: true }, // Загружаем базы данных сразу при инициализации
+)
 
 onMounted(async () => {
-  await serversStore.fetchServers();
+  await serversStore.fetchServers()
   optionsServer.value = serversStore.servers.map((server) => ({
     value: server.id,
     label: server.name,
-  }));
+  }))
 
   // Выбираем первый сервер по умолчанию
   if (serversStore.servers.length > 0) {
-    selectedServerValue.value = serversStore.servers[0].id.toString();
+    selectedServerValue.value = serversStore.servers[0].id.toString()
   }
 
-  dumpExtendStore.loadDumpsExtendFromLocalStorage();
-  await dumpExtendStore.fetchExtendDumps();
+  dumpExtendStore.loadDumpsExtendFromLocalStorage()
+  await dumpExtendStore.fetchExtendDumps()
 
-  schedulesStore.loadSchedulesExtendFromLocalStorage();
-  await schedulesStore.fetchSchedulesExtend();
-});
+  schedulesStore.loadSchedulesExtendFromLocalStorage()
+  await schedulesStore.fetchSchedulesExtend()
+  optionsServerSchedules.value = serversStore.servers.map((server) => ({
+    value: server.id,
+    label: server.name,
+  }))
+  if (serversStore.servers.length > 0) {
+    selectedServerValueSchedules.value = serversStore.servers[0].id.toString()
+  }
+})
 
-const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', '']);
+const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', ''])
 
 const tableAutoBackupHeaders = ref([
   'Сервер',
@@ -149,16 +219,23 @@ const tableAutoBackupHeaders = ref([
   'Интервал',
   'Статус',
   '',
-]);
+])
 
 // create dump
 const createDump = async () => {
   if (selectedServerValue.value && selectedDatabaseValue.value) {
-    await dumpStore.fetchDumpCreate(Number(selectedDatabaseValue.value));
-    showNotification.value = true;
-    modalsState.value.dump = false; // Закрываем модальное окно
+    await dumpStore.fetchDumpCreate(Number(selectedDatabaseValue.value))
+    showNotification.value = true
+    modalsState.value.dump = false // Закрываем модальное окно
   }
-};
+}
+const createAutoDump = async () => {
+  if (selectedServerValueSchedules.value && selectedDatabaseValueSchedules.value) {
+    await scheduleStore.fetchScheduleCreate(Number(selectedDatabaseValueSchedules.value))
+    showNotification.value = true
+    modalsState.value.schedule = false // Закрываем модальное окно
+  }
+}
 </script>
 
 <template>
@@ -330,12 +407,10 @@ const createDump = async () => {
       <div class="modal-container">
         <h3 class="modal-container__title">Создание бэкапа</h3>
         <!-- server -->
-         <div class="loader" v-if="dumpStore.dumpsLoading">
-          <AppLoader/>
-         </div>
-         <div class="error" v-else-if="dumpStore.dumpsError">
-          Что-то пошло не так...
-         </div>
+        <div class="loader" v-if="dumpStore.dumpsLoading">
+          <AppLoader />
+        </div>
+        <div class="error" v-else-if="dumpStore.dumpsError">Что-то пошло не так...</div>
         <form v-else class="form" @submit.prevent="createDump">
           <div class="form-content">
             <div class="form-group">
@@ -351,7 +426,7 @@ const createDump = async () => {
                 <AppSelect
                   :options="optionsDatabase"
                   v-model:model-value="selectedDatabaseValue"
-                  placeholder="Выберите базу данных"
+                  label="Выберите базу данных"
                 />
               </div>
             </div>
@@ -363,8 +438,48 @@ const createDump = async () => {
       </div>
     </AppModal>
     <!-- modal -->
-    <AppModal v-model:modelValue="modalsState.autoDump"> jkjjjkjk;;;;;;;;; </AppModal>
-    <AppNotification v-if="showNotification" message="Бэкап успешно создан!"/>
+    <AppModal v-model:modelValue="modalsState.autoDump">
+      <div class="modal-container">
+        <h3 class="modal-container__title">Создание автоматического бэкапа</h3>
+        <!-- server -->
+        <div class="loader" v-if="scheduleStore.schedulesLoading">
+          <AppLoader />
+        </div>
+        <div class="error" v-else-if="scheduleStore.schedulesError">Что-то пошло не так...</div>
+        <form v-else class="form" @submit.prevent="createAutoDump">
+          <div class="form-content">
+            <div class="form-group">
+              <h3 class="form-group__title">Сервер</h3>
+              <div class="form-group__item">
+                <AppSelect
+                  :options="optionsServerSchedules"
+                  v-model:model-value="selectedServerValueSchedules"
+                  placeholder="Выберите сервер"
+                />
+              </div>
+              <div class="form-group__item">
+                <AppSelect
+                  :options="optionsDatabaseSchedules"
+                  v-model:model-value="selectedDatabaseValueSchedules"
+                  label="Выберите базу данных"
+                />
+              </div>
+              <div class="form-group__item">
+                <AppSelect
+                  :options="optionInterval"
+                  v-model:model-value="scheduleStore.selectedInterval"
+                  label="Выберите интервал"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <AppButton color="green" type="submit">Создать авто бэкап</AppButton>
+          </div>
+        </form>
+      </div>
+    </AppModal>
+    <AppNotification v-if="showNotification" message="Бэкап успешно создан!" />
   </PageLayout>
 </template>
 

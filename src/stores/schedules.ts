@@ -1,4 +1,3 @@
-
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
@@ -9,6 +8,7 @@ export const useSchedulesStore = defineStore('schedules', () => {
   const schedules = ref<ISchedule[]>([])
   const schedulesLoading = ref<boolean>(false)
   const schedulesError = ref<string | null>(null)
+  const selectedInterval = ref<string>('')
   const authStore = useAuthStore()
 
   const fetchSchedules = async () => {
@@ -37,11 +37,62 @@ export const useSchedulesStore = defineStore('schedules', () => {
     }
   }
 
+  const fetchScheduleCreate = async (databaseId: number) => {
+    try {
+      schedulesLoading.value = true
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}dumps`,
+        {
+          database_id: databaseId,
+          scheduled_time: new Date().toISOString(), // Замените на нужное значение
+          created_at: new Date().toISOString(),
+          last_run_at: null,
+          reperat_interval: selectedInterval.value,
+          status: 'pending',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        },
+      )
+      console.log(response.data)
+      // Обновите список дампов, если необходимо
+      await fetchSchedules()
+    } catch (error) {
+      console.error('Error creating dump:', error)
+      schedulesError.value = (error as Error).message
+    } finally {
+      schedulesLoading.value = false
+    }
+  }
+
+  const deleteSchedule = async (id: number) => {
+    try {
+      schedulesLoading.value = true
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}dumps/id/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+        },
+      })
+      // Обновите список дампов после удаления
+      await fetchSchedules()
+    } catch (error) {
+      console.error('Error deleting dump:', error)
+      schedulesError.value = (error as Error).message
+    } finally {
+      schedulesLoading.value = false
+    }
+  }
+
   return {
     schedules,
     fetchSchedules,
     loadSchedulesFromLocalStorage,
     schedulesLoading,
     schedulesError,
+    fetchScheduleCreate,
+    selectedInterval,
+    deleteSchedule,
   }
 })
