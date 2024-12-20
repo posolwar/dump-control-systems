@@ -489,34 +489,5 @@ const createAutoDump = async () => {
   flex-direction: column;
   gap: 30px;
 }
-.modal-container {
-  &__title {
-    font-size: 20px;
-    line-height: 18px;
-    margin-bottom: 20px;
-  }
-}
-.form {
-  &-content {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-  }
 
-  &-group {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    &__title {
-      font-size: 16px;
-      line-height: 18px;
-    }
-  }
-
-  &-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
-}
 </style>

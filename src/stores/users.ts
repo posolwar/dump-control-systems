@@ -9,6 +9,7 @@ export const useUsersStore = defineStore('users', () => {
   const users = ref<IUser[]>([])
   const usersLoading = ref<boolean>(false)
   const usersError = ref<string | null>(null)
+  const sucssess = ref(false)
   const authStore = useAuthStore()
 
   const fetchUsers = async () => {
@@ -16,8 +17,8 @@ export const useUsersStore = defineStore('users', () => {
       usersLoading.value = true
       const response = await axios.get<IUser[]>(`${import.meta.env.VITE_BASE_URL}users/all`, {
         headers: {
-          'Authorization': `Bearer ${authStore.token}`
-        }
+          Authorization: `Bearer ${authStore.token}`,
+        },
       })
       users.value = response.data
       localStorage.setItem('users', JSON.stringify(users.value))
@@ -36,6 +37,59 @@ export const useUsersStore = defineStore('users', () => {
       users.value = JSON.parse(storedUsers)
     }
   }
+  const fetchUserCreate = async (userName: string, password: string) => {
+    try {
+      usersLoading.value = true
+      const response = await axios.post<IUser>(
+        `${import.meta.env.VITE_BASE_URL}users/new`,
+        {
+          username: userName,
+          password: password,
+        },
 
-  return { users, fetchUsers, loadUsersFromLocalStorage, usersLoading, usersError }
+        {
+          headers: {
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        },
+      )
+      sucssess.value = true
+      users.value.push(response.data)
+      localStorage.setItem('users', JSON.stringify(users.value))
+      console.log(users.value)
+      await fetchUsers()
+    } catch (error) {
+      console.error('Error creating user:', error)
+      usersError.value = (error as Error).message
+    } finally {
+      usersLoading.value = false
+    }
+  }
+  const fetchUserDelete = async (username: string | number) => {
+    try {
+      usersLoading.value = true
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}users/${username}`, {
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+        },
+      })
+      await fetchUsers()
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      usersError.value = (error as Error).message
+    } finally {
+      usersLoading.value = false
+    }
+  }
+
+  return {
+    users,
+    fetchUsers,
+    loadUsersFromLocalStorage,
+    usersLoading,
+    usersError,
+    fetchUserCreate,
+    sucssess,
+    fetchUserDelete,
+  }
 })
