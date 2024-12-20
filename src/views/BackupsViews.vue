@@ -1,95 +1,145 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
-import PageLayout from '@/components/layouts/PageLayout.vue'
-import ContainerElement from '@/components/ContainerElement.vue'
-import AppPagination from '@/components/AppPagination.vue'
-import AppButton from '@/components/ui/AppButton.vue'
+import { onMounted, ref, computed, watch } from 'vue';
+import PageLayout from '@/components/layouts/PageLayout.vue';
+import ContainerElement from '@/components/ContainerElement.vue';
+import AppPagination from '@/components/AppPagination.vue';
+import AppButton from '@/components/ui/AppButton.vue';
+import { useServersStore } from '@/stores/servers';
+import { useDatabasesStore } from '@/stores/databases';
+import { useDumpExtendStore } from '@/stores/extend';
+import { useSchedulesExtendStore } from '@/stores/schedules-extend';
+import { useDateFormat } from '@/composables/useDateFormat';
+import { useDumpStore } from '@/stores/dump';
+import AppLoader from '@/components/AppLoader.vue';
+import AppModal from '@/components/AppModal.vue';
+import AppSelect from '@/components/ui/AppSelect.vue';
+import type { ISelectOption } from '@/types/select';
+import type { IDatabase } from '@/types/database';
+import AppNotification from '@/components/AppNotification.vue';
 
-import { useDumpExtendStore } from '@/stores/extend'
-import { useSchedulesExtendStore } from '@/stores/schedules-extend'
-import { useDateFormat } from '@/composables/useDateFormat'
-import AppLoader from '@/components/AppLoader.vue'
-import AppModal from '@/components/AppModal.vue'
-import AppInput from '@/components/ui/AppInput.vue'
-import AppSwitch from '@/components/ui/AppSwitch.vue'
+const serversStore = useServersStore();
+const databasesStore = useDatabasesStore();
+const dumpExtendStore = useDumpExtendStore();
+const schedulesStore = useSchedulesExtendStore();
+const dumpStore = useDumpStore();
 
-const dumpExtendStore = useDumpExtendStore()
-const schedulesStore = useSchedulesExtendStore()
 // modals
 const modalsState = ref<Record<string, boolean>>({
   dump: false,
   autoDump: false,
-})
+});
 
-const isSwitchOn = ref(false)
 const openModal = (id: string) => {
-  modalsState.value[id] = true
-}
+  modalsState.value[id] = true;
+};
 
-const localData = ref(dumpExtendStore.dumpsExtend)
-const itemsPerPage = ref(5)
-const currentPage = ref(1)
+const localData = ref(dumpExtendStore.dumpsExtend);
+const itemsPerPage = ref(5);
+const currentPage = ref(1);
+const showNotification = ref(false);
+
+// select data
+const selectedServerValue = ref<string | null>(null);
+const optionsServer = ref<ISelectOption[]>([]);
+const selectedDatabaseValue = ref<string | null>(null);
+const optionsDatabase = ref<ISelectOption[]>([]);
 
 // schedules data
-const localSchedulesData = ref(schedulesStore.schedulesExtend)
-const itemsPerPageSchedules = ref(5)
-const currentPageSchedules = ref(1)
+const localSchedulesData = ref(schedulesStore.schedulesExtend);
+const itemsPerPageSchedules = ref(5);
+const currentPageSchedules = ref(1);
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return localData.value.slice(start, end)
-})
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return localData.value.slice(start, end);
+});
+
 // schedules pagination
 const paginatedSchedulesData = computed(() => {
-  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value
-  const end = start + itemsPerPageSchedules.value
-  return localSchedulesData.value.slice(start, end)
-})
+  const start = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value;
+  const end = start + itemsPerPageSchedules.value;
+  return localSchedulesData.value.slice(start, end);
+});
 
 const deleteRow = (index: number) => {
-  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
-  localData.value.splice(globalIndex, 1)
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index;
+  localData.value.splice(globalIndex, 1);
   if (globalIndex >= localData.value.length && currentPage.value > 1) {
-    currentPage.value--
+    currentPage.value--;
   }
-}
+};
 
 // schedules delete
 const deleteScheduleRow = (index: number) => {
-  const globalIndex = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value + index
-  localSchedulesData.value.splice(globalIndex, 1)
+  const globalIndex = (currentPageSchedules.value - 1) * itemsPerPageSchedules.value + index;
+  localSchedulesData.value.splice(globalIndex, 1);
   if (globalIndex >= localSchedulesData.value.length && currentPageSchedules.value > 1) {
-    currentPageSchedules.value--
+    currentPageSchedules.value--;
   }
-}
+};
 
 watch(
   () => dumpExtendStore.dumpsExtend,
   (newVal) => {
-    localData.value = [...newVal]
-    currentPage.value = 1
+    localData.value = [...newVal];
+    currentPage.value = 1;
   },
-)
+);
 
 // schedules
 watch(
   () => schedulesStore.schedulesExtend,
   (newVal) => {
-    localSchedulesData.value = [...newVal]
-    currentPageSchedules.value = 1
+    localSchedulesData.value = [...newVal];
+    currentPageSchedules.value = 1;
   },
-)
+);
+
+watch(
+  () => selectedServerValue.value,
+  async (newServerId) => {
+    if (newServerId) {
+      const databases = await databasesStore.fetchDatabaseIdServer(Number(newServerId));
+      optionsDatabase.value = databases.map((db: IDatabase) => ({
+        value: db.id,
+        label: db.name,
+      }));
+
+      // Устанавливаем первую базу данных по умолчанию
+      if (databases.length > 0) {
+        selectedDatabaseValue.value = databases[0].id.toString();
+      } else {
+        selectedDatabaseValue.value = null;
+      }
+    } else {
+      optionsDatabase.value = [];
+      selectedDatabaseValue.value = null;
+    }
+  },
+  { immediate: true } // Загружаем базы данных сразу при инициализации
+);
 
 onMounted(async () => {
-  dumpExtendStore.loadDumpsExtendFromLocalStorage()
-  await dumpExtendStore.fetchExtendDumps()
+  await serversStore.fetchServers();
+  optionsServer.value = serversStore.servers.map((server) => ({
+    value: server.id,
+    label: server.name,
+  }));
 
-  schedulesStore.loadSchedulesExtendFromLocalStorage()
-  await schedulesStore.fetchSchedulesExtend()
-})
+  // Выбираем первый сервер по умолчанию
+  if (serversStore.servers.length > 0) {
+    selectedServerValue.value = serversStore.servers[0].id.toString();
+  }
 
-const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', ''])
+  dumpExtendStore.loadDumpsExtendFromLocalStorage();
+  await dumpExtendStore.fetchExtendDumps();
+
+  schedulesStore.loadSchedulesExtendFromLocalStorage();
+  await schedulesStore.fetchSchedulesExtend();
+});
+
+const tableBackupHeaders = ref(['Сервер', 'БД', 'Дата создания', 'Размер', 'Статус', '']);
 
 const tableAutoBackupHeaders = ref([
   'Сервер',
@@ -99,7 +149,16 @@ const tableAutoBackupHeaders = ref([
   'Интервал',
   'Статус',
   '',
-])
+]);
+
+// create dump
+const createDump = async () => {
+  if (selectedServerValue.value && selectedDatabaseValue.value) {
+    await dumpStore.fetchDumpCreate(Number(selectedDatabaseValue.value));
+    showNotification.value = true;
+    modalsState.value.dump = false; // Закрываем модальное окно
+  }
+};
 </script>
 
 <template>
@@ -121,9 +180,9 @@ const tableAutoBackupHeaders = ref([
                 <AppButton>Выбрать БД</AppButton>
                 <AppButton>Выбрать период </AppButton>
               </div>
-              <AppButton color="green" class="app-table__btn" @click="openModal('dump')"
-                >создать бэкап</AppButton
-              >
+              <AppButton color="green" class="app-table__btn" @click="openModal('dump')">
+                создать бэкап
+              </AppButton>
             </div>
             <table class="table">
               <thead>
@@ -133,7 +192,6 @@ const tableAutoBackupHeaders = ref([
               </thead>
               <tbody>
                 <tr v-for="(row, rowIndex) in paginatedData" :key="rowIndex">
-                  <!-- <td v-for="(value, colIndex) in row" :key="colIndex">{{ value }}</td> -->
                   <td>{{ row.server_name }}</td>
                   <td>{{ row.database_name }}</td>
                   <td>{{ useDateFormat(row.created_at).formattedDate }}</td>
@@ -201,9 +259,9 @@ const tableAutoBackupHeaders = ref([
                 <AppButton>Выбрать БД</AppButton>
                 <AppButton>Выбрать период </AppButton>
               </div>
-              <AppButton color="green" class="app-table__btn" @click="openModal('autoDump')"
-                >создать авто бэкап</AppButton
-              >
+              <AppButton color="green" class="app-table__btn" @click="openModal('autoDump')">
+                создать авто бэкап
+              </AppButton>
             </div>
             <table class="table">
               <thead>
@@ -272,63 +330,41 @@ const tableAutoBackupHeaders = ref([
       <div class="modal-container">
         <h3 class="modal-container__title">Создание бэкапа</h3>
         <!-- server -->
-        <form class="form">
+         <div class="loader" v-if="dumpStore.dumpsLoading">
+          <AppLoader/>
+         </div>
+         <div class="error" v-else-if="dumpStore.dumpsError">
+          Что-то пошло не так...
+         </div>
+        <form v-else class="form" @submit.prevent="createDump">
           <div class="form-content">
             <div class="form-group">
-              <h3 сlass="form-group__title">Сервер</h3>
+              <h3 class="form-group__title">Сервер</h3>
               <div class="form-group__item">
-                <AppInput type="text" label="Название сервера" placeholder="MyServer" />
+                <AppSelect
+                  :options="optionsServer"
+                  v-model:model-value="selectedServerValue"
+                  placeholder="Выберите сервер"
+                />
               </div>
               <div class="form-group__item">
-                <AppInput type="text" label="IP" placeholder="192.168.1.1" />
-              </div>
-              <div class="form-group__item">
-                <AppInput type="text" label="Порт" placeholder="5432" />
-              </div>
-              <div class="form-group__item">
-                <AppSwitch v-model:modelValue="isSwitchOn" label="Статус" />
+                <AppSelect
+                  :options="optionsDatabase"
+                  v-model:model-value="selectedDatabaseValue"
+                  placeholder="Выберите базу данных"
+                />
               </div>
             </div>
           </div>
           <div class="form-footer">
-            <AppButton color="green">Создать сервер</AppButton>
-          </div>
-        </form>
-        <!-- database -->
-        <form class="form">
-          <div class="form-content">
-            <div class="form-group">
-              <h3 сlass="form-group__title">База данных</h3>
-              <div class="form-group__item">
-                <AppInput type="text" label="Название базы данных " placeholder="my_databaser" />
-              </div>
-            </div>
-          </div>
-          <div class="form-footer">
-            <AppButton color="green">Создать базу данных</AppButton>
-          </div>
-        </form>
-        <!-- dump -->
-        <form class="form">
-          <div class="form-content">
-            <div class="form-group">
-              <h3 сlass="form-group__title">Создание нового бэкапа</h3>
-              <div class="form-group__item">
-                <AppInput type="text" label="Путь к файлу " placeholder="/path/to/dump.sql" />
-              </div>
-              <div class="form-group__item">
-                <AppInput type="text" label="Запланированное время " placeholder="00:00" />
-              </div>
-            </div>
-          </div>
-          <div class="form-footer">
-            <AppButton color="green">Создать бэкап</AppButton>
+            <AppButton color="green" type="submit">Создать бэкап</AppButton>
           </div>
         </form>
       </div>
     </AppModal>
     <!-- modal -->
     <AppModal v-model:modelValue="modalsState.autoDump"> jkjjjkjk;;;;;;;;; </AppModal>
+    <AppNotification v-if="showNotification" message="Бэкап успешно создан!"/>
   </PageLayout>
 </template>
 

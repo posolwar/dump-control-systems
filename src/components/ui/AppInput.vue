@@ -54,7 +54,7 @@ const updateValue = (event: Event) => {
   padding: 6px 9px;
   border: 1px solid var(--dark-blue);
   border-radius: 10px;
-  background-color: var(--ligty-gray);
+  background-color: var(--gray);
   font-size: 16px;
   line-height: 18px;
   &:focus {

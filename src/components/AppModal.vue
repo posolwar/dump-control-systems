@@ -51,14 +51,16 @@ const closeModal = () => {
 }
 
 .modal-content {
-  background-color: var(--ligty-gray);
+  background-color: var(--dark-blue);
   padding: 60px 20px 20px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  color: var(--dark-blue);
+  color: var(--gray);
   position: relative;
   max-width: 600px;
   width: 100%;
+  border: 1px solid var(--yellow);
+  border-radius: 23px;
 }
 .modal-button {
   position: absolute;
@@ -68,5 +70,8 @@ const closeModal = () => {
   border: none;
   cursor: pointer;
   color: var(--dark-blue);
+  svg {
+    fill: var(--yellow);
+  }
 }
 </style>
