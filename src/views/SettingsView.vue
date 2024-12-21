@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import PageLayout from '@/components/layouts/PageLayout.vue'
 import ContainerElement from '@/components/ContainerElement.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppInput from '@/components/ui/AppInput.vue'
+import AppLoader from '@/components/AppLoader.vue'
+import AppPagination from '@/components/AppPagination.vue'
 import { required } from '@/utils/i18n-validators'
 
 import { useSettingsStore } from '@/stores/settings'
@@ -12,13 +14,40 @@ import AppNotification from '@/components/AppNotification.vue'
 
 const settingsStore = useSettingsStore()
 
+const localData = ref(settingsStore.settingsOptions)
 const tgToken = ref('')
+const itemsPerPage = ref(5)
+const currentPage = ref(1)
+
+const tableHeaders = ref(['Опция', 'Настройка', ''])
 
 const rules = computed(() => {
   return {
     tgToken: { required },
   }
 })
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return localData.value.slice(start, end)
+})
+
+const deleteRow = async (index: number) => {
+  const globalIndex = (currentPage.value - 1) * itemsPerPage.value + index
+  const settingName = localData.value[globalIndex].setting_name
+  console.log('jkjkjk', settingName)
+
+  try {
+    await settingsStore.fetchDeleteSettings(settingName) // Передаем username вместо id
+    localData.value.splice(globalIndex, 1)
+    if (globalIndex >= localData.value.length && currentPage.value > 1) {
+      currentPage.value--
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error)
+  }
+}
 
 const v$ = useVuelidate(rules, { tgToken })
 const fetchTgToken = async () => {
@@ -30,10 +59,18 @@ const fetchTgToken = async () => {
   tgToken.value = ''
   v$.value.$reset()
 }
-// onMounted(() => {
-//   settingsStore.loadSettingsFromLocalStorage()
-//   settingsStore.fetchSettings()
-// })
+watch(
+  () => settingsStore.settingsOptions,
+  (newVal) => {
+    localData.value = [...newVal]
+    currentPage.value = 1
+  },
+)
+onMounted(() => {
+  settingsStore.loadSettingsOptionsFromLocalStorage()
+  settingsStore.fetchSettingsOptions()
+  // settingsStore.fetchSettings()
+})
 </script>
 
 <template>
@@ -60,6 +97,54 @@ const fetchTgToken = async () => {
               </div>
               <AppButton> Сохранить </AppButton>
             </form>
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="app-table">
+            <div class="loader" v-if="settingsStore.settingsLoading">
+              <AppLoader />
+            </div>
+            <div class="error" v-else-if="settingsStore.settingsError">Что-то пошло не так...</div>
+            <table class="table" v-else>
+              <thead>
+                <tr>
+                  <th v-for="header in tableHeaders" :key="header">{{ header }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, rowIndex) in paginatedData" :key="rowIndex">
+                  <td :title="row.description">{{ row.option_name }}</td>
+                  <td>{{ row.setting_name }}</td>
+
+                  <td>
+                    <div class="table-icons">
+                      <svg
+                        @click="deleteRow(rowIndex)"
+                        class="table-icon"
+                        width="8"
+                        height="9"
+                        viewBox="0 0 8 9"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M2.07812 0.546875L3.92969 3.625L5.80469 0.546875H7.5L4.73438 4.71875L7.58594 9H5.91406L3.96094 5.82812L2.00781 9H0.328125L3.17188 4.71875L0.414062 0.546875H2.07812Z"
+                          fill="#BE2323"
+                        />
+                      </svg>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="app-table__pagination">
+              <AppPagination
+                :totalItems="settingsStore.settingsOptions.length"
+                :itemsPerPage="itemsPerPage"
+                v-model:modelValue="currentPage"
+              >
+              </AppPagination>
+            </div>
           </div>
         </div>
       </div>
@@ -99,7 +184,7 @@ const fetchTgToken = async () => {
       align-items: center;
       justify-content: space-between;
       gap: 20px;
-      margin-top: 20px;
+      padding: 10px 0;
       @media screen and (max-width: 580px) {
         flex-direction: column;
       }
