@@ -68,6 +68,9 @@ const createNewUser = async () => {
   }
   await usersStore.fetchUserCreate(userName.value, password.value)
   modalsState.value.user = false
+  userName.value = ''
+  password.value = ''
+  v$.value.$reset()
 }
 
 watch(
