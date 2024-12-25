@@ -253,6 +253,11 @@ form {
     left: 100%;
   }
 }
+.user svg,
+.lock svg {
+  fill: #757575
+}
+
 
 input {
   width: 100%;
@@ -265,7 +270,7 @@ input {
 }
 input[type='text']:focus,
 input[type='password']:focus {
-  border: 1px solid white;
+  border: 1px solid var(--gold);
   box-shadow: none;
 }
 .user-input:focus .user {
