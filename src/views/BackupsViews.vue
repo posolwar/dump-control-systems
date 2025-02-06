@@ -229,6 +229,39 @@ const createDump = async () => {
     modalsState.value.dump = false // Закрываем модальное окно
   }
 }
+
+const ipAddress = ref(' ');
+const location = ref(' ');
+const name = ref(' ');
+const port = ref(' ');
+const status = ref(' active'); // или любое значение по умолчанию
+
+const createServer = async () => {
+  await serversStore.fetchServerCreate(ipAddress.value, location.value, name.value, port.value, status.value);
+  // Закройте модальное окно
+  modalsState.value.newServer = false; 
+  // Сбросьте поля формы после успешного создания
+  ipAddress.value = '';
+  location.value = '';
+  name.value = '';
+  port.value = '';
+  status.value = 'active'; // или значение по умолчанию
+  // Добавьте логику уведомления пользователя, если необходимо
+}
+
+const databaseName = ref('');
+const serverId = ref(1); // или любое значение по умолчанию
+
+const createDatabase = async () => {
+  await databasesStore.fetchDatabaseCreate(databaseName.value, serverId.value);
+  // Закройте модальное окно
+  modalsState.value.newDatabase = false; 
+  // Сбросьте поля формы после успешного создания
+  databaseName.value = '';
+  serverId.value = 1; // или значение по умолчанию
+  // Добавьте логику уведомления пользователя, если необходимо
+}
+
 const createAutoDump = async () => {
   if (selectedServerValueSchedules.value && selectedDatabaseValueSchedules.value) {
     await scheduleStore.fetchScheduleCreate(Number(selectedDatabaseValueSchedules.value))
@@ -257,6 +290,12 @@ const createAutoDump = async () => {
                 <AppButton>Выбрать БД</AppButton>
                 <AppButton>Выбрать период </AppButton>
               </div>
+              <AppButton color="green" class="app-table__btn" @click="openModal('newServer')">
+                создать сервер
+              </AppButton>
+              <AppButton color="green" class="app-table__btn" @click="openModal('newDatabase')">
+                создать базу данных
+              </AppButton>
               <AppButton color="green" class="app-table__btn" @click="openModal('dump')">
                 создать бэкап
               </AppButton>
@@ -403,6 +442,76 @@ const createAutoDump = async () => {
       </div>
     </ContainerElement>
     <!-- modal -->
+<AppModal v-model:modelValue="modalsState.newServer">
+  <div class="modal-container">
+    <h3 class="modal-container__title">Создание нового сервера</h3>
+    <div class="loader" v-if="serversStore.serversLoading">
+      <AppLoader />
+    </div>
+    <div class="error" v-else-if="serversStore.serversError">Что-то пошло не так...</div>
+    <form v-else class="form" @submit.prevent="createServer">
+      <div class="form-content">
+        <div class="form-group">
+          <h3 class="form-group__title">Данные сервера</h3>
+          <div class="form-group__item">
+            <label>IP Адрес</label>
+            <input v-model="ipAddress" placeholder="Введите IP адрес" />
+          </div>
+          <div class="form-group__item">
+            <label>Локация</label>
+            <input v-model="location" placeholder="Введите локацию" />
+          </div>
+          <div class="form-group__item">
+            <label>Имя</label>
+            <input v-model="name" placeholder="Введите имя сервера" />
+          </div>
+          <div class="form-group__item">
+            <label>Порт</label>
+            <input v-model="port" placeholder="Введите порт" />
+          </div>
+          <div class="form-group__item">
+            <label>Статус</label>
+            <input v-model="status" placeholder="Введите статус" />
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <AppButton color="green" type="submit">Создать сервер</AppButton>
+      </div>
+    </form>
+  </div>
+</AppModal>
+<!-- modal -->
+<!-- modal -->
+<AppModal v-model:modelValue="modalsState.newDatabase">
+  <div class="modal-container">
+    <h3 class="modal-container__title">Создание новой базы данных</h3>
+    <div class="loader" v-if="databasesStore.databasesLoading">
+      <AppLoader />
+    </div>
+    <div class="error" v-else-if="databasesStore.databasesError">Что-то пошло не так...</div>
+    <form v-else class="form" @submit.prevent="createDatabase">
+      <div class="form-content">
+        <div class="form-group">
+          <h3 class="form-group__title">Данные базы данных</h3>
+          <div class="form-group__item">
+            <label>Имя</label>
+            <input v-model="databaseName" placeholder="Введите имя базы данных" />
+          </div>
+          <div class="form-group__item">
+            <label>ID сервера</label>
+            <input type="number" v-model="serverId" placeholder="Введите ID сервера" />
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <AppButton color="green" type="submit">Создать базу данных</AppButton>
+      </div>
+    </form>
+  </div>
+</AppModal>
+<!-- modal -->
+    <!-- modal -->
     <AppModal v-model:modelValue="modalsState.dump">
       <div class="modal-container">
         <h3 class="modal-container__title">Создание бэкапа</h3>
@@ -436,6 +545,7 @@ const createAutoDump = async () => {
           </div>
         </form>
       </div>
+          <AppNotification v-if="showNotification" message="Бэкап успешно создан!" />
     </AppModal>
     <!-- modal -->
     <AppModal v-model:modelValue="modalsState.autoDump">
@@ -479,7 +589,7 @@ const createAutoDump = async () => {
         </form>
       </div>
     </AppModal>
-    <AppNotification v-if="showNotification" message="Бэкап успешно создан!" />
+
   </PageLayout>
 </template>
 

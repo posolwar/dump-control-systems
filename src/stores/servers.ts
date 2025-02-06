@@ -37,5 +37,42 @@ export const useServersStore = defineStore('servers', () => {
     }
   }
 
-  return { servers, fetchServers, loadServersFromLocalStorage, serversLoading, serversError }
+  const fetchServerCreate = async (
+    ipAddress: string, 
+    location: string, 
+    name: string, 
+    port: string, 
+    status: string
+  ) => {
+    try {
+      serversLoading.value = true;
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}servers`, 
+        {
+          ip_address: ipAddress,
+          location: location,
+          name: name,
+          port: port,
+          status: status,
+        }, 
+        {
+          headers: {
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      // Обновите список серверов после успешного создания
+      await fetchServers();
+    } catch (error) {
+      console.error('Error creating server:', error);
+      serversError.value = (error as Error).message;
+    } finally {
+      serversLoading.value = false;
+    }
+  }
+
+  return { servers, fetchServers, fetchServerCreate, loadServersFromLocalStorage, serversLoading, serversError }
 })
+
+

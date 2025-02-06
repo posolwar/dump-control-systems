@@ -360,5 +360,18 @@ input[type='radio'] {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 20px; /* Добавьте отступ между кнопками */
+}
+
+.form-footer .app-button {
+  padding: 10px 20px; /* Увеличьте внутренние отступы */
+  border-radius: 5px; /* Закруглите углы */
+  font-weight: bold; /* Сделайте текст жирным */
+  transition: background-color 0.3s ease; /* Добавьте плавный переход */
+}
+
+.form-footer .app-button:hover {
+  background-color: #4cae4f; /* Измените цвет фона при наведении */
+  color: white; /* Измените цвет текста при наведении */
 }
 </style>

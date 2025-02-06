@@ -33,6 +33,7 @@ const clickOnButton = () => {
     }
   }
   &__green{
+    margin: 5px;
     background-color: var(--light-green);
     &:focus{
       outline-color: var(--light-green);
