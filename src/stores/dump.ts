@@ -56,7 +56,7 @@ export const useDumpStore = defineStore('dump', () => {
       )
       console.log(response.data)
       // Обновите список дампов, если необходимо
-      await fetchDumps()
+      fetchDumps()
     } catch (error) {
       console.error('Error creating dump:', error)
       dumpsError.value = (error as Error).message

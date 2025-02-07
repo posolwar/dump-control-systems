@@ -60,13 +60,15 @@ export const useDatabasesStore = defineStore('databases', () => {
   };
 
  
-  const fetchDatabaseCreate = async (name: string, serverId: number) => {
+  const fetchDatabaseCreate = async (name: string, username: string, password: string, serverId: number) => {
     try {
       databasesLoading.value = true;
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}database`,
         {
           name,
+          username,
+          password,
           server_id: serverId,
         },
         {
@@ -77,7 +79,7 @@ export const useDatabasesStore = defineStore('databases', () => {
       );
       console.log(response.data);
       // Обновите список баз данных, если необходимо
-      // await fetchDatabases(); // Если нужно обновить список баз данных
+      fetchDatabases(); // Если нужно обновить список баз данных
     } catch (error) {
       console.error('Error creating database:', error);
       databasesError.value = (error as Error).message;

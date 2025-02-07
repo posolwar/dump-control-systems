@@ -38,7 +38,10 @@ const openModal = (id: string) => {
 const localData = ref(dumpExtendStore.dumpsExtend)
 const itemsPerPage = ref(5)
 const currentPage = ref(1)
-const showNotification = ref(false)
+const showNotificationCreateDump = ref(false)
+const showNotificationCreateServer = ref(false)
+const showNotificationCreateDatabase = ref(false)
+
 
 // select data
 const selectedServerValue = ref<string | null>(null)
@@ -225,7 +228,7 @@ const tableAutoBackupHeaders = ref([
 const createDump = async () => {
   if (selectedServerValue.value && selectedDatabaseValue.value) {
     await dumpStore.fetchDumpCreate(Number(selectedDatabaseValue.value))
-    showNotification.value = true
+    showNotificationCreateDump.value = true
     modalsState.value.dump = false // Закрываем модальное окно
   }
 }
@@ -240,6 +243,8 @@ const createServer = async () => {
   await serversStore.fetchServerCreate(ipAddress.value, location.value, name.value, port.value, status.value);
   // Закройте модальное окно
   modalsState.value.newServer = false; 
+
+  showNotificationCreateServer.value = true
   // Сбросьте поля формы после успешного создания
   ipAddress.value = '';
   location.value = '';
@@ -251,21 +256,26 @@ const createServer = async () => {
 
 const databaseName = ref('');
 const serverId = ref(1); // или любое значение по умолчанию
+const username = ref('');
+const password = ref('');
 
 const createDatabase = async () => {
-  await databasesStore.fetchDatabaseCreate(databaseName.value, serverId.value);
+  await databasesStore.fetchDatabaseCreate(databaseName.value, username.value, password.value, serverId.value);
   // Закройте модальное окно
   modalsState.value.newDatabase = false; 
+  showNotificationCreateDatabase.value = true
   // Сбросьте поля формы после успешного создания
   databaseName.value = '';
   serverId.value = 1; // или значение по умолчанию
+  username.value = '';
+  password.value = '';
   // Добавьте логику уведомления пользователя, если необходимо
-}
+};
 
 const createAutoDump = async () => {
   if (selectedServerValueSchedules.value && selectedDatabaseValueSchedules.value) {
     await scheduleStore.fetchScheduleCreate(Number(selectedDatabaseValueSchedules.value))
-    showNotification.value = true
+    showNotificationCreateDump.value = true
     modalsState.value.schedule = false // Закрываем модальное окно
   }
 }
@@ -495,12 +505,20 @@ const createAutoDump = async () => {
         <div class="form-group">
           <h3 class="form-group__title">Данные базы данных</h3>
           <div class="form-group__item">
-            <label>Имя</label>
+            <label>Имя базы данных</label>
             <input v-model="databaseName" placeholder="Введите имя базы данных" />
           </div>
           <div class="form-group__item">
             <label>ID сервера</label>
             <input type="number" v-model="serverId" placeholder="Введите ID сервера" />
+          </div>
+          <div class="form-group__item">
+            <label>Имя пользователя</label>
+            <input v-model="username" placeholder="Введите имя пользователя" />
+          </div>
+          <div class="form-group__item">
+            <label>Пароль</label>
+            <input type="password" v-model="password" placeholder="Введите пароль" />
           </div>
         </div>
       </div>
@@ -545,8 +563,10 @@ const createAutoDump = async () => {
           </div>
         </form>
       </div>
-          <AppNotification v-if="showNotification" message="Бэкап успешно создан!" />
     </AppModal>
+    <AppNotification v-if="showNotificationCreateDump" message="Бэкап успешно создан!" />
+    <AppNotification v-if="showNotificationCreateServer" message="Сервер успешно создан!" />
+    <AppNotification v-if="showNotificationCreateDatabase" message="База данных успешно создана!" />
     <!-- modal -->
     <AppModal v-model:modelValue="modalsState.autoDump">
       <div class="modal-container">

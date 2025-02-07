@@ -68,12 +68,12 @@ export const useUsersStore = defineStore('users', () => {
   const fetchUserDelete = async (username: string | number) => {
     try {
       usersLoading.value = true
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}users/${username}`, {
+      await axios.delete(`${import.meta.env.VITE_BASE_URL}users/username/${username}`, {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
         },
       })
-      await fetchUsers()
+      fetchUsers()
     } catch (error) {
       console.error('Error deleting user:', error)
       usersError.value = (error as Error).message

@@ -63,7 +63,7 @@ export const useServersStore = defineStore('servers', () => {
       );
       console.log(response.data);
       // Обновите список серверов после успешного создания
-      await fetchServers();
+      fetchServers();
     } catch (error) {
       console.error('Error creating server:', error);
       serversError.value = (error as Error).message;
